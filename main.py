@@ -8,7 +8,9 @@ import time
 import config
 from worker_train import Worker_train as Worker
 
-opts = config.init_config()
+from CIFAR.opt import parse_config
+args = parse_config()    
+opts = config.init_config(args)
 
 from CIFAR.dataset import Dataset
 train_set = Dataset(opts, 'train')

@@ -2,10 +2,9 @@ import os
 import shutil
 import sys
 
-from CIFAR.opt import parse_config
 
-def init_config():        
-    args = parse_config()    
+
+def init_config(args):            
     args.index = args.index or index_max(args.log)    
     print("### Experience indexed: %d"%(args.index))
     folder_log = os.path.join(args.log, str(args.index) + "_" + args.model+ '_'+args.experience_name)
