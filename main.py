@@ -8,29 +8,20 @@ import time
 import config
 from worker_train import Worker_train as Worker
 
-from CIFAR.opt import parse_config
+sys.path.append('CIFAR')
+
+from opt import parse_config
 args = parse_config()    
 opts = config.init_config(args)
 
-from CIFAR.dataset import Dataset
+from dataset import Dataset
 train_set = Dataset(opts, 'train')
 val_set = Dataset(opts, 'val')
-
-
-n_batch_per_eproch = 400
-n_epoch = 10
-
 
 
 worker = Worker(opts, train_set, val_set)
 
 begin_time = time.time()
-# for epoch in range(n_epoch):        
-#         worker.run_epoch(n_batch_per_eproch)
-#     # valid(worker)
-
 worker.run_training()
-
-
 end_time = time.time()
 print(end_time - begin_time)

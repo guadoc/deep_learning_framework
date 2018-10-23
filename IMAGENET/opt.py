@@ -19,7 +19,7 @@ def parse_config():
     parser.add_argument('-il',       '--init_logs'        , default=False,                                               help='Decide if training logs are saved after each batch/epoch')
     #training config
     parser.add_argument('-ne',       '--n_epoch'          , default=100,                                                 help='total number of epoch')
-    parser.add_argument('-bs',       '--batch_size'       , default=7,                                                  help='number of exemple per batch')
+    parser.add_argument('-bs',       '--batch_size'       , default=16,                                                  help='number of exemple per batch')
     parser.add_argument('-chkp',     '--checkpoint'       , default=10,                                                  help='number of batch for each checkpoint')
     parser.add_argument('-ntrain',   '--n_data_train'     , default=1200000,                                                   help='number of data in train set')
     parser.add_argument('-nval',     '--n_data_val'       , default=50000,                                                   help='number of data in validation set')

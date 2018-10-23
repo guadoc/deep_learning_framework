@@ -2,6 +2,10 @@
 import tensorflow as tf
 import os
 import math
+import re
+import time
+from synset import *
+from tensorflow.python.ops import control_flow_ops
 from abstract_dataset import Abstract_Dataset
 
 
@@ -55,7 +59,7 @@ class Dataset(Abstract_Dataset):
         start_time = time.time()
         files, self.image_number = self.file_list(data_dir)
         for img_fn in files:
-            ext = os.path.splitext(img_fn)[1]
+            ext = os.path.splitext(img_fn)[1]            
             if ext != '.JPEG': self.image_number -= 1
             label_name = re.search(r'(n\d+)', img_fn).group(1)
             fn = os.path.join(data_dir, img_fn)
@@ -104,9 +108,9 @@ class Dataset(Abstract_Dataset):
         if self.data_type =='train':
             image = self.distort_image(image)
         elif self.data_type =='val':
-            image = eval_image(image)
+            image = self.eval_image(image)
         else:
-            image = eval_image(image)
+            image = self.eval_image(image)
         return image
 
 
@@ -161,7 +165,7 @@ class Dataset(Abstract_Dataset):
         height = tf.cast(shape[0], tf.float32)
         width = tf.cast(shape[1], tf.float32)
         height_smaller_than_width = tf.less_equal(height, width)
-        new_shorter_edge = tf.constant(self.image_size)
+        new_shorter_edge = tf.cast(tf.constant(self.image_size), tf.float32)
         new_height, new_width = control_flow_ops.cond(
             height_smaller_than_width,
             lambda: (new_shorter_edge, new_shorter_edge * width / height ),

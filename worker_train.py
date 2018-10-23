@@ -59,6 +59,8 @@ class Worker_train():
 
     def run_epoch(self, n_batches):
         self.monitor.board.init_epoch()
+        optim_params = self.train_model.optim_param_schedule(self.monitor.board)
+        print("lr: "+str(optim_params['lr'])+ ", momentum: "+str(optim_params['momentum']) )
         for batch in tq.tqdm(range(n_batches)):
             self.run_batch_optim()
         self.monitor.board.end_epoch()
