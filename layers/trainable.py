@@ -82,32 +82,18 @@ def residual_block(x, ksizes, strides, filters_out, initializer, activation, is_
 
 
 
-def residual_block_nb(x, ksizes, strides, filters_out, initializer, activation, is_training):
-    filters_in = x.get_shape()[-3]
-    tot_stride = 0
-    params = []
-    shortcut = x
-    for i in range(len(filters_out)-1):
-        with tf.variable_scope('conv'+str(i+1)): 
-            x, w = conv_2D(x, ksizes[i], strides[i], filters_out[i], initializer, use_biases=False, padding='SAME')
-            params+= w
-            tot_stride += strides[i]
-            x, param_bn = bn(x, is_training)
-            x = activation(x)
-
-    with tf.variable_scope('conv'+str(len(filters_out))):             
-        x, w = conv_2D(x, ksizes[-1], strides[-1], filters_out[-1], initializer, use_biases=False, padding='SAME')
-        params += w
-        tot_stride += strides[-1]
-        x, param_bn = bn(x, is_training)
-        
-    if filters_out[-1] != filters_in or tot_stride > len(filters_out):
-        with tf.variable_scope('shortcut'):
-            shortcut, w = conv_2D(shortcut, 1, tot_stride - len(filters_out)+1, filters_out[-1], initializer, use_biases=False, padding='SAME')
-            params+= w
-    with tf.variable_scope('shortcut'):
-        shortcut, param_bn = bn(shortcut, is_training) 
-    return activation(x + shortcut), params
+def svdfc(x, num_units_out, initializer):
+    num_units_in = x.get_shape()[1]
+    U = tf.get_variable('U', shape=[num_units_in, num_units_out], initializer=tf.orthogonal_initializer(), dtype='float')
+    sigma = tf.get_variable('sigma', shape=[num_units_out], initializer=tf.ones_initializer(), dtype='float')
+    S = tf.diag(sigma)
+    V = tf.get_variable('V', shape=[num_units_out, num_units_out], initializer=tf.orthogonal_initializer(), dtype='float')
+    biases = tf.get_variable('biases', shape=[num_units_out], initializer=tf.zeros_initializer(), dtype='float')
+    beta = 0.01
+    U = tf.assign(U,(1+beta)*U-beta*tf.matmul(U,tf.matmul(tf.transpose(U),U)))
+    V = tf.assign(V,(1+beta)*V-beta*tf.matmul(V,tf.matmul(tf.transpose(V),V)))    
+    outputs = tf.matmul(tf.matmul(tf.matmul(x,U),S),V)+biases
+    return outputs, [U, sigma, V, biases]
 
 
 

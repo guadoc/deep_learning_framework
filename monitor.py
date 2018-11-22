@@ -8,8 +8,8 @@ from board import Board
 
 
 class Monitor:
-    def __init__(self, opts, model, train_set, val_set):    
-
+    def __init__(self, opts, model, train_set, val_set):            
+        ###### model to train
         self.model = model
         self.save_model = opts.save_model
 
@@ -17,7 +17,7 @@ class Monitor:
         self.train_set = train_set
         self.val_set = val_set
 
-        #####m monitoring params    
+        ###### monitoring params    
         self.n_epoch = opts.n_epoch    
         self.train_batch_size = opts.batch_size or 128
         self.val_batch_size = opts.batch_size or 128
@@ -25,7 +25,7 @@ class Monitor:
         ###### training params
         self.training_mode = tf.placeholder(tf.bool, shape=[])        
         self.batch_size = tf.placeholder(tf.int32, shape=[])
-            
+
         ###### sampling
         val_batch_size, train_batch_size = control_flow_ops.cond(self.training_mode, 
             lambda: (tf.constant(0), self.batch_size),
@@ -42,14 +42,17 @@ class Monitor:
         self.train_metrics = self.train_metrics()
         self.val_metrics = self.val_metrics()        
 
-        ####### optim   
-        self.optimizer = self.set_optimizer(opts)
-        self.optim = self.loss_list_minimization()        
+        ####### optim           
+        
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            self.optimizer = self.set_optimizer(opts)
+            self.optim = self.loss_list_minimization()
+                    
 
         ####### board 
         self.board = Board(opts)        
         
-
 
 
 

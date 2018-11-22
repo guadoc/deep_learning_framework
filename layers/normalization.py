@@ -38,7 +38,8 @@ def bn(x, is_training):
                                 fused=True)
     x = layer_.apply(x, training=is_training)
     tf.add_to_collection("variable_to_save", layer_.moving_mean)
-    tf.add_to_collection("variable_to_save", layer_.moving_variance)
-    
+    tf.add_to_collection("variable_to_save", layer_.moving_variance)    
+    # x = tf.Print(x, [ layer_.moving_variance, layer_.moving_mean])
     return x, [layer_.beta, layer_.gamma]
+
     

@@ -14,9 +14,9 @@ class Dataset(Abstract_Dataset):
 
     def init_metadata(self, data_type):
         self.input_depth = 3
-        self.input_height = 28
-        self.input_width = 28
-        self.image_size = 32
+        self.input_height = 32#28
+        self.input_width = 32#28
+        self.image_size = 40#32
         if data_type == 'train':
             self.size =  50000 
         else:

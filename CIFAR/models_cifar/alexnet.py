@@ -33,8 +33,6 @@ def regularization_conv(layer, losses, decay, inputs, params):
 
 DATA_FORMAT = 'NCHW'
 
-N_REG_LAYER = 5
-
 
 class Model(Abstract_Model):
     def __init__(self, opts, sess):      
@@ -49,8 +47,7 @@ class Model(Abstract_Model):
 
 
     def inference(self, inputs, labels, training_mode):
-        losses = {}
-        
+        losses = {}        
         regul_loss = 0
         x = inputs
         layer = 1
@@ -97,10 +94,9 @@ class Model(Abstract_Model):
             tf.add_to_collection('classification_loss', [params5])
             tf.add_to_collection('reve_loss', [params5])
             layer, losses = regularization(layer, losses, CONV_WEIGHT_DECAY, outputs, params5)             
-
-            reve_loss  = reve(x, params5, 0.002, labels)
-
-            cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=outputs, labels=labels))        
-            losses['classification_loss'] = cross_entropy
+            
+            
+            losses['reve_loss'] = reve(x, params5, 0.002, labels)
+            losses['classification_loss'] = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=outputs, labels=labels))        
 
         return outputs, losses, tf.constant(0)

@@ -14,7 +14,7 @@ import tqdm as tq
 class Worker_train():
     def __init__(self, opts, train_set, val_set, sess = None, init_W=None):
         self.graph = tf.Graph()
-        self.sess = sess or tf.Session(graph=self.graph)    
+        self.sess = sess or tf.Session(graph=self.graph)          
         with self.graph.as_default():        
             self.init_model(opts, train_set, val_set)        
             self.launch_queus()
@@ -55,7 +55,7 @@ class Worker_train():
                                             self.monitor.momentum: optim_params["momentum"]
                                         })
             self.monitor.board.update_batch_data(metrics, self.monitor.train_batch_size)
-    
+        
 
     def run_epoch(self, n_batches):
         self.monitor.board.init_epoch()
@@ -85,7 +85,7 @@ class Worker_train():
             metrics = self.sess.run(self.monitor.val_metrics,
                                         feed_dict={
                                             self.monitor.batch_size: self.monitor.val_batch_size,
-                                            self.monitor.training_mode: False,}) 
+                                            self.monitor.training_mode: False}) 
             self.monitor.board.update_val_data(metrics, self.monitor.val_batch_size)
 
 

@@ -136,54 +136,35 @@ def reve(outputs, params, beta, labels): ################################## \Ker
 
 
 
+  
 
-
-def variational_shade_weldone(outputs, params, beta, labels): ################################## \Ker vshade
-    N_SAMPLE = 12        
-    W = params[0][0,0,:,:]
-    S,U,V = tf.svd(W)
-    Uk = tf.stop_gradient(U)
-
-    # yproj = tf.matmul(tf.matmul(outputs,Uk),tf.transpose(Uk))
-    Uconv = tf.expand_dims(tf.expand_dims(Uk, 0), 0)
-    Uconvt = tf.expand_dims(tf.expand_dims(tf.transpose(Uk), 0), 0)
-
-
-    Y1 = tf.nn.conv2d(outputs, Uconv, [1,1,1,1], padding = 'VALID', data_format='NCHW')
-    Y2 = tf.nn.conv2d(Y1, Uconvt, [1,1,1,1], padding = 'VALID', data_format='NCHW')    
-    
-    p_mode_1 = tf.sigmoid(Y2)
-    alpha = tf.reduce_mean(p_mode_1, [0])
-    mean_1 = tf.divide(tf.reduce_mean(tf.multiply(p_mode_1, Y2), [0]), alpha)
-    mean_0 = tf.divide(tf.reduce_mean(tf.multiply(1-p_mode_1, Y2), [0]), 1-alpha)
-    var_1 = tf.divide( tf.reduce_mean(tf.multiply(p_mode_1,tf.square(tf.subtract(Y2,mean_1))), [0]), alpha )
-    var_0 = tf.divide( tf.reduce_mean(tf.multiply(1-p_mode_1,tf.square(tf.subtract(Y2,mean_0))), [0]), 1-alpha )
-    
+def reve_proj(outputs, params, beta, labels):
+    N_SAMPLE = 12
     shape = outputs.get_shape().as_list()
     n_units = shape[1:]
-    STDDEV = 0.1
+    U = params[1][0]
+    yproj = tf.matmul(tf.matmul(outputs,U),tf.transpose(U))
+    p_mode_1 = tf.sigmoid(yproj)
+    alpha = tf.reduce_mean(p_mode_1, [0])
+    mean_1 = tf.divide(tf.reduce_mean(tf.multiply(p_mode_1, yproj), [0]), alpha)
+    mean_0 = tf.divide(tf.reduce_mean(tf.multiply(1-p_mode_1, yproj), [0]), 1-alpha)
+    var_1 = tf.divide( tf.reduce_mean(tf.multiply(p_mode_1,tf.square(tf.subtract(yproj,mean_1))), [0]), alpha )
+    var_0 = tf.divide( tf.reduce_mean(tf.multiply(1-p_mode_1,tf.square(tf.subtract(yproj,mean_0))), [0]), 1-alpha )
+    STDDEV = 0.1    
+    STDDEV = tf.abs(STDDEV)
     sum_reg1 = tf.constant(0.0)
     sum_reg2 = tf.constant(0.0)
     sum_reg3 = tf.constant(0.0)
     for i in range(N_SAMPLE):
-        eps = tf.random_normal(n_units,stddev=STDDEV)        
-        Z = tf.add(outputs,eps)
-        Z1 = tf.nn.conv2d(Z, Uconv, [1,1,1,1], padding = 'VALID', data_format='NCHW')
-        Z2 = tf.nn.conv2d(Z1, Uconvt, [1,1,1,1], padding = 'VALID', data_format='NCHW')          
-        OUT = tf.nn.conv2d(Z2, params[0], [1,1,1,1], padding = 'VALID', data_format='NCHW')        
-        # OUT = tf.reshape(OUT, [- 1, 1000, 14*14])            
-        # sorted_val, ind = tf.nn.top_k(  OUT,    k=196,    sorted=True)    
-        # OUTPUTS = (tf.reduce_sum(sorted_val[:, :, 0:50], axis=2) + tf.reduce_sum(sorted_val[:, :, 146:], axis=2))/50
-        OUT = tf.reshape(OUT, [- 1, 10, 7*7])            
-        sorted_val, ind = tf.nn.top_k(  OUT,    k=49,    sorted=True)    
-        OUTPUTS = (tf.reduce_sum(sorted_val[:, :, 0:22], axis=2) + 0.6*tf.reduce_sum(sorted_val[:, :, 38:], axis=2))/33
-
-        sum_reg1 -= tf.reduce_sum(tf.reduce_mean(tf.multiply(log(tf.nn.softmax(OUTPUTS)), tf.one_hot(labels,OUTPUTS.get_shape()[-1])),[0] )) / (N_SAMPLE)#*336)
-        sum_reg2 -= tf.reduce_mean( log( alpha*normal_density(Z2, mean_1, var_1)+(1-alpha)*normal_density(Z2,mean_0,var_0)) ) / N_SAMPLE
-        # sum_reg2 -= tf.reduce_sum( log( alpha*normal_density(z, mean_1, var_1)+(1-alpha)*normal_density(z,mean_0,var_0)) ) / N_SAMPLE    
-    return sum_reg1 + beta*sum_reg2#, sum_reg1, sum_reg2, sum_reg3, mean_1[0], mean_0[0], var_1[0], var_0[0], alpha[0]
-
-
+        eps = tf.random_normal(n_units,mean=0.0,stddev=STDDEV)
+        y = tf.add(outputs,eps)
+        y = tf.matmul(tf.matmul(y,U),tf.transpose(U))          
+        with tf.variable_scope('classifier', reuse=True):
+            classif, _= params[0](y)  
+        sum_reg1 -= tf.reduce_sum(tf.reduce_mean(tf.multiply(log(tf.nn.softmax(classif)), tf.one_hot(labels,classif.get_shape()[-1])),[0] )) / N_SAMPLE
+        sum_reg2 -= tf.reduce_mean( log( alpha*normal_density(y, mean_1, var_1)+(1-alpha)*normal_density(y,mean_0,var_0)) ) / N_SAMPLE
+    sum_reg2 = tf.verify_tensor_all_finite(sum_reg2, 'infinite or nan loss')    
+    return sum_reg1 + beta*sum_reg2, sum_reg1, sum_reg2, sum_reg3, mean_1[0], mean_0[0], var_1[0], var_0[0], alpha[0]
 
 
 

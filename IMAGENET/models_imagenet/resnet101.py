@@ -32,13 +32,16 @@ class Model(Abstract_Model):
     def optim_param_schedule(self, board):
         epoch = board.epoch
         momentum = 0.9
-        # if epoch < 40:
-        #     lr = 0.01
+        if epoch < 26:
+            lr = 0.01
+        elif epoch < 49:
+            lr = 0.001
+        else:
+            lr = 0.0001
         # elif epoch < 70:
         #     lr = 0.001
         # else:
-        #     lr = 0.00005
-        lr = 0.01
+        #     lr = 0.00005        
         # print("lr: "+str(lr)+ ", momentum: "+str(momentum) + ", decay: "+str(CONV_WEIGHT_DECAY))
         return {"lr":lr, "momentum":momentum}
 

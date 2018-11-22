@@ -6,13 +6,13 @@ def parse_config():
     #model config    
     parser.add_argument('-mp',       '--model_path'       , default='CIFAR.models_cifar',                         help='model folder, must contain __init__ file')
     #data config
-    parser.add_argument('-m',        '--model'            , default='alexnet',                                     help='model file')
+    parser.add_argument('-m',        '--model'            , default='resnet',                                     help='model file')
     parser.add_argument('-dp',       '--dataset'          , default='../datasets/cifar/dataset_cifar',                        help='folder with metadata configuration')
     parser.add_argument('-d',        '--data'             , default='../datasets/cifar/dataset_cifar/bin',                  help='folder with data')
     # parser.add_argument('-d',        '--data'             , default='/net/leodelibes/blot/cifar10/bin',                  help='folder with data')
     #saves and logs folders
     parser.add_argument('-le',       '--last_epoch'       , default=0,                                            help='last epoch, must load epoch model')
-    parser.add_argument('-ind',      '--index'            , default=26,                                           help='folder with experiments log and variables, None for last')
+    parser.add_argument('-ind',      '--index'            , default=25,                                           help='folder with experiments log and variables, None for last')
     parser.add_argument('-ca',       '--cache'            , default='/net/leodelibes/blot/cifar/expe',               help='folder with experiments variables')
     parser.add_argument('-sm',       '--save_model'       , default=False,                                        help='Decides if model weights are saved after each epoch')
     parser.add_argument('-log',      '--log'              , default='./CIFAR/expe',                               help='folder with experiments logs')

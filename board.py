@@ -45,8 +45,8 @@ class Board:
         self.batch_val +=1
         self.sample_val += batch_size        
         for metric_name, metric_value in self.val_cumul_metrics.items():
-            self.val_cumul_metrics[metric_name] += metrics[metric_name]        
-
+            self.val_cumul_metrics[metric_name] += metrics[metric_name] 
+            
     def init_val_data(self):
         self.batch_val = 0
         self.sample_val = 0
